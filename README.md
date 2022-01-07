@@ -1,5 +1,5 @@
 # DecentraLease
-#DecentraLease is a web app built with ReactJs. 
+# DecentraLease is a web app built with ReactJs. 
 #It records the ownership process of a vehicle from the beginning of it's life to the end. 
 #There are four roles: 
 #Manufacturer - Creates the vehicle
