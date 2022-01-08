@@ -6,5 +6,4 @@
 * Dealer: Buy vehicle from Manufacturer
 * Buyer: Purchase vehicle from Dealer 
 * Regulatory Authority : View All Transactions
-*
 * These transactions will be recorded on the Ethereum Blockchain
