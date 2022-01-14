@@ -30,19 +30,14 @@ class Manufacturer extends Component {
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
       const deployedNetwork = SimpleStorageContract.networks[networkId];
-      const instance = new web3.eth.Contract(
-        SimpleStorageContract.abi,
-        deployedNetwork && deployedNetwork.address
-      );
+      const instance = new web3.eth.Contract(SimpleStorageContract.abi, deployedNetwork && deployedNetwork.address);
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
       this.setState({ web3, accounts, contract: instance }, this.runExample);
     } catch (error) {
       // Catch any errors for any of the above operations.
-      alert(
-        `Failed to load web3, accounts, or contract. Check console for details.`
-      );
+      //alert(`Failed to load web3, accounts, or contract. Check console for details.`);
       console.error(error);
     }
   };
@@ -66,32 +61,24 @@ class Manufacturer extends Component {
     return (
       <div className="RegAuth">
         <div>
-          {" "}
           <Navbar pageName={pageName} />
         </div>
         <div className="lowerNavItems">
-          <div className="view"> Current </div>{" "}
-          <div className="viewInactive"> Sold </div>
+          <div className="view"> Current </div> <div className="viewInactive"> Sold </div>
           <div className="viewInactive">
-            <Button
-              id="addCarButton"
-              onClick={() => this.setState({ modalShow: true })}
-            >
+            <Button id="addCarButton" onClick={() => this.setState({ modalShow: true })}>
               Add Car
-            </Button>{" "}
-          </div>{" "}
-        </div>{" "}
-        <MyVerticallyCenteredModal
-          show={this.state.modalShow}
-          onHide={() => this.setState({ modalShow: false })}
-        />
+            </Button>
+          </div>
+        </div>
+        <MyVerticallyCenteredModal show={this.state.modalShow} onHide={() => this.setState({ modalShow: false })} />
         <div className="transactions">
           <Table striped bordered hover size="sm">
             <thead>
               <tr>
                 <th> # </th> <th> First Name </th>
                 <th> Last Name </th>
-                <th> Username </th>{" "}
+                <th> Username </th>
               </tr>
             </thead>
             <tbody>
@@ -164,16 +151,9 @@ function RegAuth() {
 
 function MyVerticallyCenteredModal(props) {
   return (
-    <Modal
-      {...props}
-      size="lg"
-      aria-labelledby="contained-modal-title-vcenter"
-      centered
-    >
+    <Modal {...props} size="lg" aria-labelledby="contained-modal-title-vcenter" centered>
       <Modal.Header closeButton>
-        <Modal.Title id="contained-modal-title-vcenter">
-          Modal heading{" "}
-        </Modal.Title>{" "}
+        <Modal.Title id="contained-modal-title-vcenter">Modal heading </Modal.Title>{" "}
       </Modal.Header>
       <Modal.Body>
         <AddForm />
@@ -209,10 +189,7 @@ class AddForm extends React.Component {
         </Form.Group>
         <Form.Group className="mb-2" controlId="formYear">
           <Form.Label> Year </Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Enter year Vehicle was manufactured"
-          />
+          <Form.Control type="text" placeholder="Enter year Vehicle was manufactured" />
         </Form.Group>
         <Form.Group className="mb-2" controlId="formMake">
           <Form.Label> Make </Form.Label>
