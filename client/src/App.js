@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Component } from "react";
-import SimpleStorageContract from "./contracts/SimpleStorage.json";
+import CarContract from "./contracts/Car.json";
 import getWeb3 from "./getWeb3";
 import "./App.css";
 import { Routes, Route, Link, BrowserRouter } from "react-router-dom";
@@ -8,19 +8,58 @@ import Modal from "react-bootstrap/Modal";
 import Table from "react-bootstrap/Table";
 import Form from "react-bootstrap/Form";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { FormspreeProvider } from "@formspree/react";
 
 class Manufacturer extends Component {
   state = {
-    storageValue: 0,
+    arrayvar: [],
     web3: null,
     accounts: null,
     contract: null,
     modalShow: false,
-    setModalShow: false
+    setModalShow: false,
+    data: null
+  };
+
+  handleCallback = async childData => {
+    //this.setState({ data: childData[0].toValue() });
+
+    const { accounts, contract } = this.state;
+    console.log("Contract: ", contract);
+
+    await contract.methods.addCar(childData[0], childData[1], childData[2], childData[3]).send({ from: accounts[0] });
+    const response = await contract.methods.getCar(childData[0]).call();
+    console.log(response);
+    this.setState({
+      arrayvar: [...this.state.arrayvar, response]
+    });
+    console.log(this.state.arrayvar);
+    //const { 0: var1, 1: var2, 2: var3, 3: var4 } = await contract.methods.getCars();
+
+    //const response1 = await contract.methods.getCounter();
+
+    //console.log(var1, var2, var3, var4);
+
+    /*contract.methods.getCars().then(function(res) {
+      var a0 = res[0];
+      var a1 = res[1];
+      var a2 = res[2];
+      var a3 = res[3];
+    });*/
+    //console.log("A0: ", a0);
+    //console.log(contract.methods.getCounter().call());
+    //this.setState({ storageValue: response });
+    //console.log("Response: ", response);
+    // console.log("StorageValue: ", this.state.storageValue);
+    //console.log("It's me YES IT IS", this.state.data);
+    console.log("It's me YES IT IS", childData[0]);
+    this.setState({ modalShow: false });
   };
 
   componentDidMount = async () => {
     try {
+      const _this = this;
+      this.handleCallback = this.handleCallback.bind(_this);
       // Get network provider and web3 instance.
       const web3 = await getWeb3();
 
@@ -29,35 +68,54 @@ class Manufacturer extends Component {
 
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = SimpleStorageContract.networks[networkId];
-      const instance = new web3.eth.Contract(SimpleStorageContract.abi, deployedNetwork && deployedNetwork.address);
+      const deployedNetwork = CarContract.networks[networkId];
+      const instance = new web3.eth.Contract(CarContract.abi, deployedNetwork && deployedNetwork.address);
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
+      console.log("hello!");
       this.setState({ web3, accounts, contract: instance }, this.runExample);
     } catch (error) {
       // Catch any errors for any of the above operations.
-      //alert(`Failed to load web3, accounts, or contract. Check console for details.`);
+      alert(`Failed to load web3, accounts, or contract. Check console for details.`);
       console.error(error);
     }
   };
   runExample = async () => {
-    const { accounts, contract } = this.state;
-
-    // Stores a given value, 5 by default.
-    await contract.methods.set(5).send({ from: accounts[0] });
+    console.log("RunExample is running!");
+    const { contract } = this.state;
 
     // Get the value from the contract to prove it worked.
-    const response = await contract.methods.get().call();
+    const response = await contract.methods.getCar("");
+    console.log(response);
 
     // Update state with the result.
-    this.setState({ storageValue: response });
+    this.setState({ storageValue: response.toString() });
+  };
+
+  createTable = () => {
+    let table = [];
+
+    // Outer loop to create parent
+    for (let i = 0; i < this.state.arrayvar.length; i++) {
+      let children = [];
+      children.push(<td>{i}</td>);
+      //Inner loop to create children
+      for (let j = 0; j < 4; j++) {
+        children.push(<td>{this.state.arrayvar[i][j]}</td>);
+        //children.push(<td>{`Column ${j + 1}`}</td>)
+      }
+      //Create the parent and add the children
+      table.push(<tr>{children}</tr>);
+    }
+    return table;
   };
   render() {
-    /*if (!this.state.web3) {
-      return <div> Loading Web3, accounts, and contract... </div>;
-    }*/
+    const { data } = this.state;
     const pageName = "Manufacturer";
+    if (!this.state.web3) {
+      return <div>Loading Web3, accounts, and contract...</div>;
+    }
     return (
       <div className="RegAuth">
         <div>
@@ -71,52 +129,97 @@ class Manufacturer extends Component {
             </Button>
           </div>
         </div>
-        <MyVerticallyCenteredModal show={this.state.modalShow} onHide={() => this.setState({ modalShow: false })} />
+        <MyVerticallyCenteredModal
+          parentCallback={this.handleCallback}
+          show={this.state.modalShow}
+          onHide={() => this.setState({ modalShow: false })}
+          const
+        />
         <div className="transactions">
           <Table striped bordered hover size="sm">
             <thead>
               <tr>
-                <th> # </th> <th> First Name </th>
-                <th> Last Name </th>
-                <th> Username </th>
+                <th> # </th> <th> Vin </th>
+                <th> Year </th>
+                <th> Make </th>
+                <th> Model </th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td> 1 </td>
-                <td> Mark </td>
-                <td> Otto </td>
-                <td> @mdo </td>
-              </tr>
-              <tr>
-                <td> 2 </td>
-                <td> Jacob </td>
-                <td> Thornton </td>
-                <td> @fat </td>
-              </tr>
-              <tr>
-                <td> 3 </td>
-                <td colSpan={2}> Larry the Bird </td>
-                <td> @twitter </td>
-              </tr>
-            </tbody>
+            <tbody>{this.createTable()}</tbody>
           </Table>
         </div>
       </div>
-      /** <div className="home">
-<h1>Good to Go!</h1>
-<p>Your Truffle Box is installed and ready.</p>
-<h2>Smart Contract Example</h2>
-<p>
-  If your contracts compiled and migrated successfully, below will show
-  a stored value of 5 (by default).
-</p>
-<p>
-  Try changing the value stored on <strong>line 42</strong> of App.js.
-</p>
-<div>The stored value is: {this.state.storageValue}</div>
-</div> 
-*/
+    );
+  }
+}
+
+class MyVerticallyCenteredModal extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      data: 0
+    };
+  }
+
+  handleCallback = childData => {
+    this.props.parentCallback(childData);
+    // this.setState({ data: childData });
+    //console.log(childData);
+  };
+  render() {
+    return (
+      <Modal {...this.props} size="lg" aria-labelledby="contained-modal-title-vcenter" centered>
+        <Modal.Header closeButton>
+          <Modal.Title id="contained-modal-title-vcenter">Add Car </Modal.Title>{" "}
+        </Modal.Header>
+        <Modal.Body>
+          <AddForm parentCallback={this.handleCallback} />
+        </Modal.Body>
+      </Modal>
+    );
+  }
+}
+class AddForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.vin = React.createRef();
+    this.year = React.createRef();
+    this.make = React.createRef();
+    this.model = React.createRef();
+  }
+
+  handleSubmit(event) {
+    const form_data = [this.vin.current.value, this.year.current.value, this.make.current.value, this.model.current.value];
+    //console.log(form_data);
+    //alert("A name was submitted: " + this.vin.current.value);
+    this.props.parentCallback(form_data);
+    event.preventDefault();
+  }
+
+  render() {
+    return (
+      <Form onSubmit={this.handleSubmit}>
+        <Form.Group className="mb-2" controlId="formVinNumber">
+          <Form.Label> Vin Number </Form.Label>
+          <Form.Control type="text" placeholder="Enter Vin Number" ref={this.vin} />
+        </Form.Group>
+        <Form.Group className="mb-2" controlId="formYear">
+          <Form.Label> Year </Form.Label>
+          <Form.Control type="text" placeholder="Enter year Vehicle was manufactured" ref={this.year} />
+        </Form.Group>
+        <Form.Group className="mb-2" controlId="formMake">
+          <Form.Label> Make </Form.Label>
+          <Form.Control type="text" placeholder="Enter Make" ref={this.make} />
+        </Form.Group>
+        <Form.Group className="mb-2" controlId="formModel">
+          <Form.Label> Model </Form.Label>
+          <Form.Control type="text" placeholder="Enter Model" ref={this.model} />
+        </Form.Group>
+        <Button className="mb-2" type="submit">
+          Submit
+        </Button>
+      </Form>
     );
   }
 }
@@ -147,65 +250,6 @@ function RegAuth() {
       <div className="transactions"></div>
     </div>
   );
-}
-
-function MyVerticallyCenteredModal(props) {
-  return (
-    <Modal {...props} size="lg" aria-labelledby="contained-modal-title-vcenter" centered>
-      <Modal.Header closeButton>
-        <Modal.Title id="contained-modal-title-vcenter">Modal heading </Modal.Title>{" "}
-      </Modal.Header>
-      <Modal.Body>
-        <AddForm />
-      </Modal.Body>
-    </Modal>
-  );
-}
-
-class AddForm extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { value: "" };
-
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-  }
-
-  handleChange(event) {
-    this.setState({ value: event.target.value });
-  }
-
-  handleSubmit(event) {
-    alert("A name was submitted: " + this.state.value);
-    event.preventDefault();
-  }
-
-  render() {
-    return (
-      <Form onSubmit={this.handleSubmit}>
-        <Form.Group className="mb-2" controlId="formVinNumber">
-          <Form.Label> Vin Number </Form.Label>
-          <Form.Control type="text" placeholder="Enter Vin Number" />
-        </Form.Group>
-        <Form.Group className="mb-2" controlId="formYear">
-          <Form.Label> Year </Form.Label>
-          <Form.Control type="text" placeholder="Enter year Vehicle was manufactured" />
-        </Form.Group>
-        <Form.Group className="mb-2" controlId="formMake">
-          <Form.Label> Make </Form.Label>
-          <Form.Control type="text" placeholder="Enter Make" />
-        </Form.Group>
-        <Form.Group className="mb-2" controlId="formModel">
-          <Form.Label> Model </Form.Label>
-          <Form.Control type="text" placeholder="Enter Model" />
-        </Form.Group>
-        <Button className="mb-2" type="submit">
-          {" "}
-          Submit{" "}
-        </Button>
-      </Form>
-    );
-  }
 }
 
 function Navbar(props) {

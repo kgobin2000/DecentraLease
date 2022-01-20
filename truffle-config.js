@@ -6,8 +6,13 @@ module.exports = {
   contracts_build_directory: path.join(__dirname, "client/src/contracts"),
   networks: {
     develop: {
-      port: 8545,
-      network_id: "1642122456479"
+      port: 7545,
+      network_id: "1337"
+    }
+  },
+  compilers: {
+    solc: {
+      version: "0.8.7" // ex:  "0.4.20". (Default: Truffle's installed solc)
     }
   }
 };
